@@ -7,7 +7,8 @@ Basic interface to Princeton Instrument's PICam library. It supports most of the
 that are provided by PICam. I have decided not to implement a non-blocking version of the image
 acquisition in order to keep things clear and simple.
 
-Here is some example code showing the necessary parameters to get 1 kHz readout rates on a PIXIS100::
+Here is some example code showing the necessary parameters to get 1 kHz readout rates
+on a PIXIS100::
 
     from picam import *
 
@@ -94,7 +95,7 @@ import numpy as np
 from picam_types import *
 
 
-# ##########################################################################################################
+###################################################################################################
 # helper functions
 def ptr(x):
     """Shortcut to return a ctypes.pointer to object x.
@@ -102,7 +103,7 @@ def ptr(x):
     return ctypes.pointer(x)
 
 
-# ##########################################################################################################
+###################################################################################################
 # Camera Class
 class picam():
     """Main class that handles all connectivity with library and cameras.
@@ -122,7 +123,9 @@ class picam():
     def loadLibrary(self, pathToLib=""):
         """Loads the picam library ('Picam.dll') and initializes it.
 
-        :param str pathToLib: Path to the dynamic link library (optional). If empty, the library is loaded using the path given by the environment variabel *PicamRoot*, which is normally created by the PICam SDK installer.
+        :param str pathToLib: Path to the dynamic link library (optional).
+            If empty, the library is loaded using the path given by the environment variable
+            *PicamRoot*, which is normally created by the PICam SDK installer.
         :returns: Prints the library version to stdout.
         """
         if pathToLib == "":
@@ -175,12 +178,14 @@ class picam():
         distr = piint()
         released = piint()
         self.status(self.lib.Picam_GetVersion(ptr(major), ptr(minor), ptr(distr), ptr(released)))
-        return "PICam Library Version %d.%d.%d.%d" % (major.value, minor.value, distr.value, released.value)
+        return "PICam Library Version %d.%d.%d.%d" % (major.value, minor.value,
+                                                      distr.value, released.value)
 
     # returns a list of camera IDs that are connected to the computer
     # if no physical camera is found, a demo camera is initialized - for debug only
     def getAvailableCameras(self):
-        """Queries a list of IDs of cameras that are connected to the computer and prints some sensor information for each camera to stdout.
+        """Queries a list of IDs of cameras that are connected to the computer and prints
+        some sensor information for each camera to stdout.
 
         If no physical camera is found, a demo camera is initialized - *for debug only*.
         """
@@ -200,7 +205,8 @@ class picam():
 
             model_array = ptr(piint())
             model_count = piint()
-            self.status(self.lib.Picam_GetAvailableDemoCameraModels(ptr(model_array), ptr(model_count)))
+            self.status(self.lib.Picam_GetAvailableDemoCameraModels(ptr(model_array),
+                                                                    ptr(model_count)))
 
             model_ID = PicamCameraID()
             serial = ctypes.c_char_p("Demo Cam 1")
@@ -210,14 +216,16 @@ class picam():
             self.status(self.lib.Picam_DestroyModels(model_array))
 
             print '  Model is ', PicamModelLookup[model_ID.model]
-            print '  Computer interface is ', PicamComputerInterfaceLookup[model_ID.computer_interface]
+            print '  Computer interface is ', \
+                PicamComputerInterfaceLookup[model_ID.computer_interface]
             print '  Sensor_name is ', model_ID.sensor_name
             print '  Serial number is', model_ID.serial_number
             print '\n'
         else:
             for i in range(id_count.value):
                 print '  Model is ', PicamModelLookup[self.camIDs[i].model]
-                print '  Computer interface is ', PicamComputerInterfaceLookup[self.camIDs[i].computer_interface]
+                print '  Computer interface is ', \
+                    PicamComputerInterfaceLookup[self.camIDs[i].computer_interface]
                 print '  Sensor_name is ', self.camIDs[i].sensor_name
                 print '  Serial number is', self.camIDs[i].serial_number
                 print '\n'
@@ -229,7 +237,8 @@ class picam():
         return PicamErrorLookup[self.err]
 
     def status(self, err):
-        """Checks the return value of a picam function for any error code. If an error occurred, it prints the error message to stdout.
+        """Checks the return value of a picam function for any error code.
+        If an error occurred, it prints the error message to stdout.
 
         :param int err: Error code returned by any picam function call.
         :returns: Error code (int) and if an error occurred, prints error message.
@@ -248,7 +257,10 @@ class picam():
     def connect(self, camID=None):
         """ Connect to camera.
 
-        :param int camID: Number / index of camera to connect to (optional). It is an integer index into a list of valid camera IDs that has been retrieved by :py:func:`getAvailableCameras`. If camID is None, this functions connects to the first available camera (default).
+        :param int camID: Number / index of camera to connect to (optional).
+            It is an integer index into a list of valid camera IDs that has been retrieved by
+            :py:func:`getAvailableCameras`. If camID is None, this functions connects to
+            the first available camera (default).
         """
         if self.cam is not None:
             self.disconnect()
@@ -257,7 +269,8 @@ class picam():
             self.status(self.lib.Picam_OpenFirstCamera(ptr(self.cam)))
         else:
             self.cam = pivoid()
-            self.status(self.lib.Picam_OpenCamera(ptr(self.camIDs[camID]), ctypes.addressof(self.cam)))
+            self.status(self.lib.Picam_OpenCamera(ptr(self.camIDs[camID]),
+                                                  ctypes.addressof(self.cam)))
         # invoke commit parameters to validate all parameters for acquisition
         self.sendConfiguration()
 
@@ -277,7 +290,8 @@ class picam():
 
     # prints a list of parameters that are available
     def printAvailableParameters(self):
-        """Prints an overview over the parameters to stdout that are available for the current camera and their limits.
+        """Prints an overview over the parameters to stdout that are available for
+        the current camera and their limits.
         """
         parameter_array = ptr(piint())
         parameter_count = piint()
@@ -300,16 +314,19 @@ class picam():
             elif PicamConstraintTypeLookup[contype.value] == "Range":
 
                 c = ptr(PicamRangeConstraint())
-                self.lib.Picam_GetParameterRangeConstraint(self.cam, parameter_array[i], PicamConstraintCategory['Capable'], ptr(c))
+                self.lib.Picam_GetParameterRangeConstraint(self.cam, parameter_array[i],
+                    PicamConstraintCategory['Capable'], ptr(c))
 
-                constraint = "from %f to %f in steps of %f" % (c[0].minimum, c[0].maximum, c[0].increment)
+                constraint = "from %f to %f in steps of %f" % (c[0].minimum, c[0].maximum,
+                                                               c[0].increment)
 
                 self.lib.Picam_DestroyRangeConstraints(c)
 
             elif PicamConstraintTypeLookup[contype.value] == "Collection":
 
                 c = ptr(PicamCollectionConstraint())
-                self.lib.Picam_GetParameterCollectionConstraint(self.cam, parameter_array[i], PicamConstraintCategory['Capable'], ptr(c))
+                self.lib.Picam_GetParameterCollectionConstraint(self.cam, parameter_array[i],
+                    PicamConstraintCategory['Capable'], ptr(c))
 
                 constraint = ""
                 for j in range(c[0].values_count):
@@ -337,7 +354,8 @@ class picam():
     # get / set parameters
     # name is a string specifying the parameter
     def getParameter(self, name):
-        """Reads and returns the value of the parameter with given name. If there is no parameter of this name, the function returns None and prints a warning.
+        """Reads and returns the value of the parameter with given name.
+        If there is no parameter of this name, the function returns None and prints a warning.
 
         :param str name: Name of the parameter exactly as stated in the PICam SDK manual.
         :returns: Value of this parameter with data type corresponding to the type of parameter.
@@ -413,12 +431,16 @@ class picam():
         return None
 
     def setParameter(self, name, value):
-        """Set parameter. The value is automatically typecast to the correct data type corresponding to the type of parameter.
+        """Set parameter. The value is automatically typecast to the correct data type
+        corresponding to the type of parameter.
 
-        .. note:: Setting a parameter with this function does not automatically change the configuration in the camera. In order to apply all changes, :py:func:`sendConfiguration` has to be called.
+        .. note:: Setting a parameter with this function does not automatically change
+        the configuration in the camera. In order to apply all changes,
+        :py:func:`sendConfiguration` has to be called.
 
         :param str name: Name of the parameter exactly as stated in the PICam SDK manual.
-        :param mixed value: New parameter value. If the parameter value cannot be changed, a warning is printed to stdout.
+        :param mixed value: New parameter value. If the parameter value cannot be changed,
+        a warning is printed to stdout.
         """
         prm = PicamParameter[name]
 
@@ -475,7 +497,8 @@ class picam():
     # this function has to be called once all configurations
     # are done to apply settings to the camera
     def sendConfiguration(self):
-        """This function has to be called once all configurations are done to apply settings to the camera.
+        """This function has to be called once all configurations are done to apply settings
+        to the camera.
         """
         failed = ptr(piint())
         failedCount = piint()
@@ -510,10 +533,12 @@ class picam():
 
         :param int x0: X-coordinate of upper left corner of ROI.
         :param int w: Width of ROI.
-        :param int xbin: X-Binning, i.e. number of columns that are combined into one larger column (1 to w).
+        :param int xbin: X-Binning, i.e. number of columns that are combined into one
+            larger column (1 to w).
         :param int y0: Y-coordinate of upper left corner of ROI.
         :param int h: Height of ROI.
-        :param int ybin: Y-Binning, i.e. number of rows that are combined into one larger row (1 to h).
+        :param int ybin: Y-Binning, i.e. number of rows that are combined into one
+            larger row (1 to h).
         """
         r = PicamRoi(x0, w, xbin, y0, h, ybin)
         R = PicamRois(ptr(r), 1)
@@ -524,7 +549,8 @@ class picam():
     def addROI(self, x0, w, xbin, y0, h, ybin):
         """Add a region-of-interest to the existing list of ROIs.
 
-        .. important:: The ROIs should not overlap! However, this function does not check for overlapping ROIs!
+        .. important:: The ROIs should not overlap! However, this function does not check
+            for overlapping ROIs!
 
         :param int x0: X-coordinate of upper left corner of ROI.
         :param int w: Width of ROI.
@@ -550,10 +576,13 @@ class picam():
     # N = number of frames
     # timeout = max wait time between frames in ms
     def readNFrames(self, N=1, timeout=100):
-        """This function acquires N frames using Picam_Acquire. It waits till all frames have been collected before it returns.
+        """This function acquires N frames using Picam_Acquire.
+        It waits till all frames have been collected before it returns.
 
-        :param int N: Number of frames to collect (>= 1, default=1). This number is essentially limited by the available memory.
-        :param float timeout: Maximum wait time between frames in milliseconds (default=100). This parameter is important when using external triggering.
+        :param int N: Number of frames to collect (>= 1, default=1).
+            This number is essentially limited by the available memory.
+        :param float timeout: Maximum wait time between frames in milliseconds (default=100).
+            This parameter is important when using external triggering.
         :returns: List of acquired frames.
         """
         available = PicamAvailableData()
@@ -566,7 +595,8 @@ class picam():
             return []
 
         # start acquisition
-        self.status(self.lib.Picam_Acquire(self.cam, pi64s(N), piint(timeout), ptr(available), ptr(errors)))
+        self.status(self.lib.Picam_Acquire(self.cam, pi64s(N), piint(timeout),
+                                           ptr(available), ptr(errors)))
 
         # return data as numpy array
         if available.readout_count >= N:
@@ -577,12 +607,15 @@ class picam():
         return []
 
     # this is a helper function that converts a readout buffer into a sequence of numpy arrays
-    # it reads all available data at once into a numpy buffer and reformats data to fit to the output mask
+    # it reads all available data at once into a numpy buffer and reformats data to
+    # fit to the output mask
     # size is number of readouts to read
     # returns data as floating point
     def getBuffer(self, address, size):
-        """This is an internally used function to convert the readout buffer into a sequence of numpy arrays.
-        It reads all available data at once into a numpy buffer and reformats data to a usable format.
+        """This is an internally used function to convert the readout buffer into
+        a sequence of numpy arrays.
+        It reads all available data at once into a numpy buffer and reformats data
+        to a usable format.
 
         :param long address: Memory address where the readout buffer is stored.
         :param int size: Number of readouts available in the readout buffer.
@@ -603,13 +636,16 @@ class picam():
         data = np.frombuffer(dataPointer.contents, dtype='uint16')
 
         # cast it into a usable format - [frames][data]
-        data = ((data.reshape(size, readoutstride)[:, :frames * framestride]).reshape(size, frames, framestride)[:, :, :self.totalFrameSize]).reshape(size * frames, self.totalFrameSize).astype(float)
+        data = ((data.reshape(size, readoutstride)[:, :frames * framestride]). \
+                reshape(size, frames, framestride)[:, :, :self.totalFrameSize]). \
+                reshape(size * frames, self.totalFrameSize).astype(float)
 
         # if there is just a single ROI, we are done
         if len(self.ROIS) == 1:
             return [data.reshape(size * frames, self.ROIS[0][0], self.ROIS[0][1])]
 
-        # otherwise, iterate through rois and add to output list (has to be list due to possibly different sizes)
+        # otherwise, iterate through rois and add to output list (has to be list due to
+        # possibly different sizes)
         out = []
         for i, r in enumerate(self.ROIS):
             out.append(data[:, r[2]:r[0] * r[1] + r[2]])
