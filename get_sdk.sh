@@ -2,7 +2,7 @@
 
 SDK_URL=ftp://ftp.princetoninstruments.com/Public/Software/Official/PICam/Picam_SDK.run
 
-#wget $SDK_URL -O Picam_SDK.run
+wget $SDK_URL -c -O Picam_SDK.run
 sh Picam_SDK.run --target Picam_SDK --noexec
 
 for lib in libpicam.so libpiac.so libpicc.so libpida.so libpidi.so; do
