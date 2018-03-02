@@ -92,7 +92,7 @@ on a PIXIS100::
 import os
 import ctypes
 import numpy as np
-from picam_types import *
+from .picam_types import *
 
 
 ###################################################################################################
@@ -138,7 +138,7 @@ class picam():
         if not isconnected.value:
             self.status(self.lib.Picam_InitializeLibrary())
 
-        print self.getLibraryVersion()
+        print(self.getLibraryVersion())
 
     # call this function to release any resources and free the library
     def unloadLibrary(self):
@@ -166,7 +166,7 @@ class picam():
 
         # unload the library
         self.status(self.lib.Picam_UninitializeLibrary())
-        print "Unloaded PICamSDK"
+        print("Unloaded PICamSDK")
 
     # +++++++++++ CLASS FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # get version information
@@ -199,7 +199,7 @@ class picam():
         self.status(self.lib.Picam_GetAvailableCameraIDs(ptr(self.camIDs), ptr(id_count)))
 
         # if none are found, create a demo camera
-        print "Available Cameras:"
+        print("Available Cameras:")
         if id_count.value < 1:
             self.status(self.lib.Picam_DestroyCameraIDs(self.camIDs))
 
@@ -215,20 +215,20 @@ class picam():
 
             self.status(self.lib.Picam_DestroyModels(model_array))
 
-            print '  Model is ', PicamModelLookup[model_ID.model]
-            print '  Computer interface is ', \
-                PicamComputerInterfaceLookup[model_ID.computer_interface]
-            print '  Sensor_name is ', model_ID.sensor_name
-            print '  Serial number is', model_ID.serial_number
-            print '\n'
+            print('  Model is ', PicamModelLookup[model_ID.model])
+            print('  Computer interface is ', \
+                PicamComputerInterfaceLookup[model_ID.computer_interface])
+            print('  Sensor_name is ', model_ID.sensor_name)
+            print('  Serial number is', model_ID.serial_number)
+            print('\n')
         else:
             for i in range(id_count.value):
-                print '  Model is ', PicamModelLookup[self.camIDs[i].model]
-                print '  Computer interface is ', \
-                    PicamComputerInterfaceLookup[self.camIDs[i].computer_interface]
-                print '  Sensor_name is ', self.camIDs[i].sensor_name
-                print '  Serial number is', self.camIDs[i].serial_number
-                print '\n'
+                print('  Model is ', PicamModelLookup[self.camIDs[i].model])
+                print('  Computer interface is ', \
+                    PicamComputerInterfaceLookup[self.camIDs[i].computer_interface])
+                print('  Sensor_name is ', self.camIDs[i].sensor_name)
+                print('  Serial number is', self.camIDs[i].serial_number)
+                print('\n')
 
     # returns string associated with last error
     def getLastError(self):
@@ -245,7 +245,7 @@ class picam():
         """
         errstr = PicamErrorLookup[err]
         if errstr != "None":
-            print "ERROR: ", errstr
+            print("ERROR: ", errstr)
         #    raise AssertionError(errstr)
         self.err = err
         return err
@@ -344,10 +344,10 @@ class picam():
                 constraint = "N.A."
 
             # print infos
-            print PicamParameterLookup[parameter_array[i]]
-            print " value access:", readable
-            print " allowed values:", constraint
-            print "\n"
+            print(PicamParameterLookup[parameter_array[i]])
+            print(" value access:", readable)
+            print(" allowed values:", constraint)
+            print("\n")
 
         self.lib.Picam_DestroyParameters(parameter_array)
 
@@ -365,8 +365,8 @@ class picam():
         exists = pibln()
         self.lib.Picam_DoesParameterExist(self.cam, prm, ptr(exists))
         if not exists.value:
-            print "Ignoring parameter", name
-            print "  Parameter does not exist for current camera!"
+            print("Ignoring parameter", name)
+            print("  Parameter does not exist for current camera!")
             return
 
         # get type of parameter
@@ -374,8 +374,8 @@ class picam():
         self.lib.Picam_GetParameterValueType(self.cam, prm, ptr(type))
 
         if type.value not in PicamValueTypeLookup:
-            print "Not a valid parameter type enumeration:", type.value
-            print "Ignoring parameter", name
+            print("Not a valid parameter type enumeration:", type.value)
+            print("Ignoring parameter", name)
             return 0
 
         if PicamValueTypeLookup[type.value] in ["Integer", "Boolean", "Enumeration"]:
@@ -447,26 +447,26 @@ class picam():
         exists = pibln()
         self.lib.Picam_DoesParameterExist(self.cam, prm, ptr(exists))
         if not exists:
-            print "Ignoring parameter", name
-            print "  Parameter does not exist for current camera!"
+            print("Ignoring parameter", name)
+            print("  Parameter does not exist for current camera!")
             return
 
         access = piint()
         self.lib.Picam_GetParameterValueAccess(self.cam, prm, ptr(access))
         if PicamValueAccessLookup[access.value] not in ["ReadWrite", "ReadWriteTrivial"]:
-            print "Ignoring parameter", name
-            print "  Not allowed to overwrite parameter!"
+            print("Ignoring parameter", name)
+            print("  Not allowed to overwrite parameter!")
             return
         if PicamValueAccessLookup[access.value] == "ReadWriteTrivial":
-            print "WARNING: Parameter", name, " allows only one value!"
+            print("WARNING: Parameter", name, " allows only one value!")
 
         # get type of parameter
         type = piint()
         self.lib.Picam_GetParameterValueType(self.cam, prm, ptr(type))
 
         if type.value not in PicamValueTypeLookup:
-            print "Ignoring parameter", name
-            print "  Not a valid parameter type:", type.value
+            print("Ignoring parameter", name)
+            print("  Not a valid parameter type:", type.value)
             return
 
         if PicamValueTypeLookup[type.value] in ["Integer", "Boolean", "Enumeration"]:
@@ -491,8 +491,8 @@ class picam():
             self.status(self.lib.Picam_SetParameterModulationsValue(self.cam, prm, ptr(value)))
 
         if self.err != PicamError["None"]:
-            print "Ignoring parameter", name
-            print "  Could not change parameter. Keeping previous value:", self.getParameter(name)
+            print("Ignoring parameter", name)
+            print("  Could not change parameter. Keeping previous value:", self.getParameter(name))
 
     # this function has to be called once all configurations
     # are done to apply settings to the camera
@@ -507,7 +507,7 @@ class picam():
 
         if failedCount.value > 0:
             for i in range(failedCount.value):
-                print "Could not set parameter", PicamParameterLookup[failed[i]]
+                print("Could not set parameter", PicamParameterLookup[failed[i]])
         self.status(self.lib.Picam_DestroyParameters(failed))
 
         self.updateROIS()
@@ -591,7 +591,7 @@ class picam():
         running = pibln()
         self.lib.Picam_IsAcquisitionRunning(self.cam, ptr(running))
         if running.value:
-            print "ERROR: acquisition still running"
+            print("ERROR: acquisition still running")
             return []
 
         # start acquisition
@@ -706,7 +706,7 @@ if __name__ == '__main__':
     cam.sendConfiguration()
 
     # get readout speed
-    print "Estimated readout time = %f ms" % cam.getParameter("ReadoutTimeCalculation")
+    print("Estimated readout time = %f ms" % cam.getParameter("ReadoutTimeCalculation"))
 
     cam.disconnect()
     cam.unloadLibrary()

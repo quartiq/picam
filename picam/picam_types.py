@@ -91,7 +91,7 @@ PicamError = {"None": 0,
     "TimeOutOccurred": 32,
     "AcquisitionUpdatedHandlerRegistered": 33,
     "NondestructiveReadoutEnabled": 41}
-PicamErrorLookup = dict(zip(PicamError.values(), PicamError.keys()))
+PicamErrorLookup = dict(list(zip(list(PicamError.values()), list(PicamError.keys()))))
 
 PicamEnumeratedType = {
     "Error": 1,
@@ -137,7 +137,7 @@ PicamEnumeratedType = {
     "RoisConstraintRulesMask": 24,
     "AcquisitionErrorsMask": 25
 }
-PicamEnumeratedTypeLookup = dict(zip(PicamEnumeratedType.values(), PicamEnumeratedType.keys()))
+PicamEnumeratedTypeLookup = dict(list(zip(list(PicamEnumeratedType.values()), list(PicamEnumeratedType.keys()))))
 
 PicamModel = {
     "PixisSeries": 0,
@@ -332,14 +332,14 @@ PicamModel = {
     "NirvanaLNSeries": 1100,
     "NirvanaLN640": 1101
 }
-PicamModelLookup = dict(zip(PicamModel.values(), PicamModel.keys()))
+PicamModelLookup = dict(list(zip(list(PicamModel.values()), list(PicamModel.keys()))))
 
 PicamComputerInterface = {
     "Usb2": 1,
     "1394A": 2,
     "GigabitEthernet": 3
 }
-PicamComputerInterfaceLookup = dict(zip(PicamComputerInterface.values(), PicamComputerInterface.keys()))
+PicamComputerInterfaceLookup = dict(list(zip(list(PicamComputerInterface.values()), list(PicamComputerInterface.keys()))))
 
 PicamStringSize = {
     "SensorName": 64,
@@ -347,7 +347,7 @@ PicamStringSize = {
     "FirmwareName": 64,
     "FirmwareDetail": 256
 }
-PicamStringSizeLookup = dict(zip(PicamStringSize.values(), PicamStringSize.keys()))
+PicamStringSizeLookup = dict(list(zip(list(PicamStringSize.values()), list(PicamStringSize.keys()))))
 
 PicamValueType = {
     "Integer": 1,
@@ -359,7 +359,7 @@ PicamValueType = {
     "Pulse": 7,
     "Modulations": 8
 }
-PicamValueTypeLookup = dict(zip(PicamValueType.values(), PicamValueType.keys()))
+PicamValueTypeLookup = dict(list(zip(list(PicamValueType.values()), list(PicamValueType.keys()))))
 
 PicamConstraintType = {
     "None": 1,
@@ -369,7 +369,7 @@ PicamConstraintType = {
     "Pulse": 5,
     "Modulations": 6
 }
-PicamConstraintTypeLookup = dict(zip(PicamConstraintType.values(), PicamConstraintType.keys()))
+PicamConstraintTypeLookup = dict(list(zip(list(PicamConstraintType.values()), list(PicamConstraintType.keys()))))
 
 PI_V = lambda v, c, n: (PicamConstraintType[c] << 24) + (PicamValueType[v] << 16) + n
 
@@ -504,14 +504,14 @@ PicamParameter = {
     "DisableCoolingFan": PI_V("Boolean", "Collection", 29),
     "EnableSensorWindowHeater": PI_V("Boolean", "Collection", 127)
 }
-PicamParameterLookup = dict(zip(PicamParameter.values(), PicamParameter.keys()))
+PicamParameterLookup = dict(list(zip(list(PicamParameter.values()), list(PicamParameter.keys()))))
 
 PicamAdcAnalogGain = {
     "Low": 1,
     "Medium": 2,
     "High": 3
 }
-PicamAdcAnalogGainLookup = dict(zip(PicamAdcAnalogGain.values(), PicamAdcAnalogGain.keys()))
+PicamAdcAnalogGainLookup = dict(list(zip(list(PicamAdcAnalogGain.values()), list(PicamAdcAnalogGain.keys()))))
 
 PicamAdcQuality = {
     "LowNoise": 1,
@@ -519,7 +519,7 @@ PicamAdcQuality = {
     "HighSpeed": 4,
     "ElectronMultiplied": 3
 }
-PicamAdcQualityLookup = dict(zip(PicamAdcQuality.values(), PicamAdcQuality.keys()))
+PicamAdcQualityLookup = dict(list(zip(list(PicamAdcQuality.values()), list(PicamAdcQuality.keys()))))
 
 PicamCcdCharacteristicsMask = {
     "None": 0x000,
@@ -538,29 +538,29 @@ PicamEMIccdGainControlMode = {
     "Optimal": 1,
     "Manual": 2
 }
-PicamEMIccdGainControlModeLookup = dict(zip(PicamEMIccdGainControlMode.values(),
-                                            PicamEMIccdGainControlMode.keys()))
+PicamEMIccdGainControlModeLookup = dict(list(zip(list(PicamEMIccdGainControlMode.values()),
+                                            list(PicamEMIccdGainControlMode.keys()))))
 
 PicamGateTrackingMask = {
     "None": 0x0,
     "Delay": 0x1,
     "Width": 0x2
 }
-PicamGateTrackingMaskLookup = dict(zip(PicamGateTrackingMask.values(),
-                                       PicamGateTrackingMask.keys()))
+PicamGateTrackingMaskLookup = dict(list(zip(list(PicamGateTrackingMask.values()),
+                                       list(PicamGateTrackingMask.keys()))))
 
 PicamGatingMode = {
     "Repetitive": 1,
     "Sequential": 2,
     "Custom": 3
 }
-PicamGatingModeLookup = dict(zip(PicamGatingMode.values(), PicamGatingMode.keys()))
+PicamGatingModeLookup = dict(list(zip(list(PicamGatingMode.values()), list(PicamGatingMode.keys()))))
 
 PicamGatingSpeed = {
     "Fast": 1,
     "Slow": 2
 }
-PicamGatingSpeedLookup = dict(zip(PicamGatingSpeed.values(), PicamGatingSpeed.keys()))
+PicamGatingSpeedLookup = dict(list(zip(list(PicamGatingSpeed.values()), list(PicamGatingSpeed.keys()))))
 
 PicamIntensifierOptionsMask = {
     "None": 0x0,
@@ -568,15 +568,15 @@ PicamIntensifierOptionsMask = {
     "SubNanosecondGating": 0x2,
     "Modulation": 0x4
 }
-PicamIntensifierOptionsMaskLookup = dict(zip(PicamIntensifierOptionsMask.values(),
-                                             PicamIntensifierOptionsMask.keys()))
+PicamIntensifierOptionsMaskLookup = dict(list(zip(list(PicamIntensifierOptionsMask.values()),
+                                             list(PicamIntensifierOptionsMask.keys()))))
 
 PicamIntensifierStatus = {
     "PoweredOff": 1,
     "PoweredOn": 2
 }
-PicamIntensifierStatusLookup = dict(zip(PicamIntensifierStatus.values(),
-                                        PicamIntensifierStatus.keys()))
+PicamIntensifierStatusLookup = dict(list(zip(list(PicamIntensifierStatus.values()),
+                                        list(PicamIntensifierStatus.keys()))))
 
 PicamModulationTrackingMask = {
     "None": 0x0,
@@ -585,15 +585,15 @@ PicamModulationTrackingMask = {
     "Phase": 0x4,
     "OutputSignalFrequency": 0x8
 }
-PicamModulationTrackingMaskLookup = dict(zip(PicamModulationTrackingMask.values(),
-                                             PicamModulationTrackingMask.keys()))
+PicamModulationTrackingMaskLookup = dict(list(zip(list(PicamModulationTrackingMask.values()),
+                                             list(PicamModulationTrackingMask.keys()))))
 
 PicamOrientationMask = {
     "Normal": 0x0,
     "FlippedHorizontally": 0x1,
     "FlippedVertically": 0x2
 }
-PicamOrientationMaskLookup = dict(zip(PicamOrientationMask.values(), PicamOrientationMask.keys()))
+PicamOrientationMaskLookup = dict(list(zip(list(PicamOrientationMask.values()), list(PicamOrientationMask.keys()))))
 
 PicamOutputSignal = {
     "NotReadingOut": 1,
@@ -608,13 +608,13 @@ PicamOutputSignal = {
     "ReadingOut": 10,
     "WaitingForTrigger": 11
 }
-PicamOutputSignalLookup = dict(zip(PicamOutputSignal.values(), PicamOutputSignal.keys()))
+PicamOutputSignalLookup = dict(list(zip(list(PicamOutputSignal.values()), list(PicamOutputSignal.keys()))))
 
 PicamPhosphorType = {
     "P43": 1,
     "P46": 2
 }
-PicamPhosphorTypeLookup = dict(zip(PicamPhosphorType.values(), PicamPhosphorType.keys()))
+PicamPhosphorTypeLookup = dict(list(zip(list(PicamPhosphorType.values()), list(PicamPhosphorType.keys()))))
 
 PicamPhotocathodeSensitivity = {
     "RedBlue": 1,
@@ -628,21 +628,21 @@ PicamPhotocathodeSensitivity = {
     "HighRedFilmless": 8,
     "HighBlueFilmless": 6
 }
-PicamPhotocathodeSensitivityLookup = dict(zip(PicamPhotocathodeSensitivity.values(),
-                                              PicamPhotocathodeSensitivity.keys()))
+PicamPhotocathodeSensitivityLookup = dict(list(zip(list(PicamPhotocathodeSensitivity.values()),
+                                              list(PicamPhotocathodeSensitivity.keys()))))
 
 PicamPhotonDetectionMode = {
     "Disabled": 1,
     "Thresholding": 2,
     "Clipping": 3
 }
-PicamPhotonDetectionModeLookup = dict(zip(PicamPhotonDetectionMode.values(),
-                                          PicamPhotonDetectionMode.keys()))
+PicamPhotonDetectionModeLookup = dict(list(zip(list(PicamPhotonDetectionMode.values()),
+                                          list(PicamPhotonDetectionMode.keys()))))
 
 PicamPixelFormat = {
     "Monochrome16Bit": 1
 }
-PicamPixelFormatLookup = dict(zip(PicamPixelFormat.values(), PicamPixelFormat.keys()))
+PicamPixelFormatLookup = dict(list(zip(list(PicamPixelFormat.values()), list(PicamPixelFormat.keys()))))
 
 PicamReadoutControlMode = {
     "FullFrame": 1,
@@ -652,21 +652,21 @@ PicamReadoutControlMode = {
     "SpectraKinetics": 4,
     "Dif": 6
 }
-PicamReadoutControlModeLookup = dict(zip(PicamReadoutControlMode.values(),
-                                         PicamReadoutControlMode.keys()))
+PicamReadoutControlModeLookup = dict(list(zip(list(PicamReadoutControlMode.values()),
+                                         list(PicamReadoutControlMode.keys()))))
 
 PicamSensorTemperatureStatus = {
     "Unlocked": 1,
     "Locked": 2
 }
-PicamSensorTemperatureStatusLookup = dict(zip(PicamSensorTemperatureStatus.values(),
-                                              PicamSensorTemperatureStatus.keys()))
+PicamSensorTemperatureStatusLookup = dict(list(zip(list(PicamSensorTemperatureStatus.values()),
+                                              list(PicamSensorTemperatureStatus.keys()))))
 
 PicamSensorType = {
     "Ccd": 1,
     "InGaAs": 2
 }
-PicamSensorTypeLookup = dict(zip(PicamSensorType.values(), PicamSensorType.keys()))
+PicamSensorTypeLookup = dict(list(zip(list(PicamSensorType.values()), list(PicamSensorType.keys()))))
 
 PicamShutterTimingMode = {
     "Normal": 1,
@@ -674,21 +674,21 @@ PicamShutterTimingMode = {
     "AlwaysOpen": 3,
     "OpenBeforeTrigger": 4
 }
-PicamShutterTimingModeLookup = dict(zip(PicamShutterTimingMode.values(),
-                                        PicamShutterTimingMode.keys()))
+PicamShutterTimingModeLookup = dict(list(zip(list(PicamShutterTimingMode.values()),
+                                        list(PicamShutterTimingMode.keys()))))
 
 PicamTimeStampsMask = {
     "None": 0x0,
     "ExposureStarted": 0x1,
     "ExposureEnded": 0x2
 }
-PicamTimeStampsMaskLookup = dict(zip(PicamTimeStampsMask.values(), PicamTimeStampsMask.keys()))
+PicamTimeStampsMaskLookup = dict(list(zip(list(PicamTimeStampsMask.values()), list(PicamTimeStampsMask.keys()))))
 
 PicamTriggerCoupling = {
     "AC": 1,
     "DC": 2
 }
-PicamTriggerCouplingLookup = dict(zip(PicamTriggerCoupling.values(), PicamTriggerCoupling.keys()))
+PicamTriggerCouplingLookup = dict(list(zip(list(PicamTriggerCoupling.values()), list(PicamTriggerCoupling.keys()))))
 
 PicamTriggerDetermination = {
     "PositivePolarity": 1,
@@ -696,8 +696,8 @@ PicamTriggerDetermination = {
     "RisingEdge": 3,
     "FallingEdge": 4
 }
-PicamTriggerDeterminationLookup = dict(zip(PicamTriggerDetermination.values(),
-                                           PicamTriggerDetermination.keys()))
+PicamTriggerDeterminationLookup = dict(list(zip(list(PicamTriggerDetermination.values()),
+                                           list(PicamTriggerDetermination.keys()))))
 
 PicamTriggerResponse = {
     "NoResponse": 1,
@@ -706,48 +706,48 @@ PicamTriggerResponse = {
     "ExposeDuringTriggerPulse": 4,
     "StartOnSingleTrigger": 5
 }
-PicamTriggerResponseLookup = dict(zip(PicamTriggerResponse.values(), PicamTriggerResponse.keys()))
+PicamTriggerResponseLookup = dict(list(zip(list(PicamTriggerResponse.values()), list(PicamTriggerResponse.keys()))))
 
 PicamTriggerSource = {
     "External": 1,
     "Internal": 2
 }
-PicamTriggerSourceLookup = dict(zip(PicamTriggerSource.values(), PicamTriggerSource.keys()))
+PicamTriggerSourceLookup = dict(list(zip(list(PicamTriggerSource.values()), list(PicamTriggerSource.keys()))))
 
 PicamTriggerTermination = {
     "FiftyOhms": 1,
     "HighImpedance": 2
 }
-PicamTriggerTerminationLookup = dict(zip(PicamTriggerTermination.values(),
-                                         PicamTriggerTermination.keys()))
+PicamTriggerTerminationLookup = dict(list(zip(list(PicamTriggerTermination.values()),
+                                         list(PicamTriggerTermination.keys()))))
 
 PicamValueAccess = {
     "ReadOnly": 1,
     "ReadWriteTrivial": 3,
     "ReadWrite": 2
 }
-PicamValueAccessLookup = dict(zip(PicamValueAccess.values(), PicamValueAccess.keys()))
+PicamValueAccessLookup = dict(list(zip(list(PicamValueAccess.values()), list(PicamValueAccess.keys()))))
 
 PicamConstraintScope = {
     "Independent": 1,
     "Dependent": 2
 }
-PicamConstraintScopeLookup = dict(zip(PicamConstraintScope.values(), PicamConstraintScope.keys()))
+PicamConstraintScopeLookup = dict(list(zip(list(PicamConstraintScope.values()), list(PicamConstraintScope.keys()))))
 
 PicamConstraintSeverity = {
     "Error": 1,
     "Warning": 2
 }
-PicamConstraintSeverityLookup = dict(zip(PicamConstraintSeverity.values(),
-                                         PicamConstraintSeverity.keys()))
+PicamConstraintSeverityLookup = dict(list(zip(list(PicamConstraintSeverity.values()),
+                                         list(PicamConstraintSeverity.keys()))))
 
 PicamConstraintCategory = {
     "Capable": 1,
     "Required": 2,
     "Recommended": 3
 }
-PicamConstraintSeverityLookup = dict(zip(PicamConstraintSeverity.values(),
-                                         PicamConstraintSeverity.keys()))
+PicamConstraintSeverityLookup = dict(list(zip(list(PicamConstraintSeverity.values()),
+                                         list(PicamConstraintSeverity.keys()))))
 
 PicamRoisConstraintRulesMask = {
     "None": 0x00,
@@ -757,16 +757,16 @@ PicamRoisConstraintRulesMask = {
     "VerticalSymmetry": 0x08,
     "SymmetryBoundsBinning": 0x10
 }
-PicamRoisConstraintRulesMaskLookup = dict(zip(PicamRoisConstraintRulesMask.values(),
-                                              PicamRoisConstraintRulesMask.keys()))
+PicamRoisConstraintRulesMaskLookup = dict(list(zip(list(PicamRoisConstraintRulesMask.values()),
+                                              list(PicamRoisConstraintRulesMask.keys()))))
 
 PicamAcquisitionErrorsMask = {
     "None": 0x0,
     "DataLost": 0x1,
     "ConnectionLost": 0x2
 }
-PicamAcquisitionErrorsMaskLookup = dict(zip(PicamAcquisitionErrorsMask.values(),
-                                            PicamAcquisitionErrorsMask.keys()))
+PicamAcquisitionErrorsMaskLookup = dict(list(zip(list(PicamAcquisitionErrorsMask.values()),
+                                            list(PicamAcquisitionErrorsMask.keys()))))
 
 
 # +++++++ structures +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
