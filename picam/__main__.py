@@ -1,7 +1,8 @@
+import os
 from . import *
 
 cam = picam()
-cam.loadLibrary()
+cam.loadLibrary("libpicam.so.0")
 cam.getAvailableCameras()
 cam.connect()
 

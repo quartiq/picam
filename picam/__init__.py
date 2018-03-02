@@ -124,17 +124,12 @@ class picam():
         self.totalFrameSize = 0
 
     # load picam.dll and initialize library
-    def loadLibrary(self, pathToLib=""):
-        """Loads the picam library ('Picam.dll') and initializes it.
+    def loadLibrary(self, pathToLib):
+        """Loads the picam library (picam.dll or libpicam.so) and initializes it.
 
-        :param str pathToLib: Path to the dynamic link library (optional).
-            If empty, the library is loaded using the path given by the environment variable
-            *PicamRoot*, which is normally created by the PICam SDK installer.
+        :param str pathToLib: Path to the dynamic link library.
         :returns: Prints the library version to stdout.
         """
-        if pathToLib == "":
-            pathToLib = os.path.join(os.environ["PicamRoot"], "Runtime")
-        pathToLib = os.path.join(pathToLib, "Picam.dll")
         self.lib = ctypes.cdll.LoadLibrary(pathToLib)
 
         isconnected = pibln()
@@ -213,7 +208,7 @@ class picam():
                                                                     ptr(model_count)))
 
             model_ID = PicamCameraID()
-            serial = ctypes.c_char_p("Demo Cam 1")
+            serial = ctypes.c_char_p(b"Demo Cam 1")
             self.status(self.lib.Picam_ConnectDemoCamera(model_array[0], serial, ptr(model_ID)))
             self.camIDs = [model_ID]
 
