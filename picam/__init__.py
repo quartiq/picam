@@ -92,7 +92,11 @@ on a PIXIS100::
 import os
 import ctypes
 import numpy as np
+from . import types
 from .types import *
+
+
+__all__ = ['picam'] + types.__all__
 
 
 ###################################################################################################
