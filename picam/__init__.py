@@ -92,7 +92,7 @@ on a PIXIS100::
 import os
 import ctypes
 import numpy as np
-from .picam_types import *
+from .types import *
 
 
 ###################################################################################################
