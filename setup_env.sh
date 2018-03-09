@@ -12,5 +12,5 @@ GENICAM_LOG_CONFIG_V2_4=${PICAM_SDK}/pleora/lib/genicam/log/config/DefaultLoggin
 GENICAM_CACHE_V2_4=${HOME}/.config/Pleora/genicam_cache_v2_4
 export GENICAM_ROOT_V2_4 GENICAM_LOG_CONFIG_V2_4 GENICAM_CACHE_V2_4
 
-PICAM_TMP=${HOME}/.local/tmp
+PICAM_TMP=${HOME}/.local/tmp/
 export PICAM_TMP
