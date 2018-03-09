@@ -1,0 +1,115 @@
+--- a/pleora/module/ebUniversalProForEthernet/LFT_Module.c	2018-03-09 11:46:36.113498676 +0000
++++ b/pleora/module/ebUniversalProForEthernet/LFT_Module.c	2018-03-09 12:04:54.421453637 +0000
+@@ -189,10 +189,14 @@
+     // Initialize the net filter hook
+     memset( &sNetFilterOperations, 0, sizeof( sNetFilterOperations ) );
+     sNetFilterOperations.hook       = LFT_GetNetFilterHookFunction();
+     sNetFilterOperations.pf         = PF_INET; 
+     sNetFilterOperations.hooknum    = LFT_GetNetFilterHookNumber();
+     sNetFilterOperations.priority   = NF_IP_PRI_FIRST;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,13,0)
+     if( unlikely( nf_register_hook( &sNetFilterOperations ) ) )
++#else
++    if( unlikely( nf_register_net_hook( &init_net, &sNetFilterOperations ) ) )
++#endif
+     {
+         printk( KERN_ERR LFT_MODULE_NAME " module is unable to configure the netfilter hook\n" );
+ 		goto Error4;
+@@ -214,7 +218,11 @@
+ 
+ static void LFT_ModuleCleanup( void )
+ {
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,13,0)
+     nf_unregister_hook( &sNetFilterOperations );
++#else
++    nf_unregister_net_hook( &init_net, &sNetFilterOperations );
++#endif
+     LFT_PublicFilterClose();
+     LFT_PublicFilterCloseStatic();
+     cdev_del( &sCharDevice );
+--- a/pleora/module/ebUniversalProForEthernet/OS_KMLMemoryMap.c	2018-03-09 11:46:36.113498676 +0000
++++ b/pleora/module/ebUniversalProForEthernet/OS_KMLMemoryMap.c	2018-03-09 12:05:28.505452239 +0000
+@@ -50,36 +50,49 @@
+ 
+ #if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) || !defined( OS_ALLOW_GPL ) )
+     down_read( &current->mm->mmap_sem );
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+     lPageCount = get_user_pages( current, current->mm, ( ( unsigned long ) aUserAddress ) & PAGE_MASK,
+         aMap->PageCount, 1, 0, lPageList, NULL );
++#else
++    lPageCount = get_user_pages( ( ( unsigned long ) aUserAddress ) & PAGE_MASK,
++        aMap->PageCount, FOLL_WRITE, lPageList, NULL );
++#endif
+     up_read( &current->mm->mmap_sem );
+ #else
+     lPageCount = get_user_pages_fast( ( ( unsigned long ) aUserAddress ) & PAGE_MASK, aMap->PageCount,
+         1, lPageList );
+ #endif 
+     if( unlikely( lPageCount != ( int ) aMap->PageCount ) )
+     {
+         for( i = 0; i < ( unsigned int ) lPageCount; i++ )
+         {
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+             page_cache_release( lPageList[ i ] );
++#else
++            put_page( lPageList[ i ] );
++#endif
+         }
+         kfree( lPageList );
+         return OS_RESULT_OUT_OF_RESOURCES;
+     }
+     
+     lKernelPageAddress = vmap( ( struct page** ) aMap->PageList, aMap->PageCount, VM_MAP, PAGE_KERNEL );
+     if( unlikely( !lKernelPageAddress ) )
+     {
+         for( i = 0; i < aMap->PageCount; i++ )
+         {
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
+              page_cache_release( lPageList[ i ] );
++#else
++             put_page( lPageList[ i ] );
++#endif
+         }
+         kfree( lPageList );
+         return OS_RESULT_OUT_OF_RESOURCES;
+     }
+ 
+     aMap->UserAddress = aUserAddress;
+     aMap->KernelAddress = ( OS_VOID* ) ( ( ( unsigned long ) lKernelPageAddress ) 
+         + offset_in_page( aUserAddress ) );
+     aMap->Size = aSize;
+ 
+@@ -100,9 +113,13 @@
+         if( !PageReserved( lPage ) )
+         {
+             SetPageDirty( lPage );
+-        }  
+-        page_cache_release( lPage ); 
+-    }        
++        }
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
++        page_cache_release( lPage );
++#else
++        put_page( lPage );
++#endif
++    }
+     kfree( lPageList );
+ 
+     return OS_RESULT_OK;
+--- a/pleora/module/ebUniversalProForEthernet/OS_KMLSystem.c	2018-03-09 11:46:36.113498676 +0000
++++ b/pleora/module/ebUniversalProForEthernet/OS_KMLSystem.c	2018-03-09 12:16:33.957424950 +0000
+@@ -8,8 +8,13 @@
+ #include <EbTransportLayerLib/OS_String.h>
+ #include <EbTransportLayerLib/OS_Time.h>
+ 
++#include <linux/version.h>
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4,13,0)
+ #include <asm/cputime.h>
+-#include "linux/kernel.h"
++#else
++#include <linux/sched/cputime.h>
++#endif
++#include <linux/kernel.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/spinlock.h>
+ #include <linux/timer.h>
