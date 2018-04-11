@@ -1,5 +1,5 @@
 import picam as pi
-from ctypes import byref, POINTER, cast, c_char_p
+from ctypes import byref, POINTER, cast, c_char_p, pythonapi, py_object
 import numpy as np
 
 NUM_FRAMES = 5
@@ -12,10 +12,12 @@ data = pi.PicamAvailableData()
 errors = pi.PicamAcquisitionErrorsMask()
 readoutstride = pi.piint(0);
 
+pythonapi.PyMemoryView_FromMemory.restype = py_object
+
 def print_data(data, num, length):
-    data = cast(data, POINTER(pi.pibyte))
-    data = np.asarray(data[:num*length.value], np.dtype(">u2"))
-    data = data.reshape(num, -1)
+    # read only buffer
+    data = pythonapi.PyMemoryView_FromMemory(data, num*length.value, 0x100)
+    data = np.ndarray((num, length.value//2), ">u2", data, order="C")
     print(data.shape, data[:, :10])
 
 pi.Picam_InitializeLibrary()
