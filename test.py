@@ -14,11 +14,18 @@ def main():
         model = pi.get_string(pi.PicamEnumeratedType_Model, cid.model)
         logger.info("model: %s, serial: %s, sensor: %s",
                     model, cid.serial_number, cid.sensor_name)
+        temp = cam.get_float(pi.PicamParameter_SensorTemperatureReading)
+        logger.info("temp: %g C", temp)
+        st = pi.get_string(
+            pi.PicamEnumeratedType_SensorTemperatureStatus,
+            cam.get_int(pi.PicamParameter_SensorTemperatureStatus))
+        logger.info("temp status: %s", st)
+        cam.set_float(pi.PicamParameter_SensorTemperatureSetPoint, -20.)
         cam.set_int(pi.PicamParameter_AdcAnalogGain,
                     pi.PicamAdcAnalogGain_Low)
         cam.set_float(pi.PicamParameter_ExposureTime, 30.)  # ms
         cam.set_long(pi.PicamParameter_ReadoutCount, 1)
-        cam.commit()
+        logger.info("failed commit: %s", cam.commit())
         readoutstride = cam.get_int(pi.PicamParameter_ReadoutStride)
         logger.debug("exposure %s ms",
                       cam.get_float(pi.PicamParameter_ExposureTime))

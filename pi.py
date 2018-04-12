@@ -16,9 +16,9 @@ class Error(Exception):
     def __str__(self):
         try:
             string = get_string(PicamEnumeratedType_Error, self.error)
+            return "pi.Error({}): {}".format(self.error, string)
         except:
-            string = "<unknown error>"
-        return "Error({}): {}".format(self.error, string)
+            return "pi.Error({})".format(self.error)
 
     @classmethod
     def check(cls, err):
@@ -29,14 +29,13 @@ class Error(Exception):
 
 def get_string(typ, val):
     string = POINTER(pichar)()
-    Error.check(Picam_GetEnumerationString(
-        typ, val, byref(string)))
+    Error.check(Picam_GetEnumerationString(typ, val, byref(string)))
     ret = cast(string, c_char_p).value.decode()  # decode copies
     Error.check(Picam_DestroyString(string))
     return ret
 
 
-def get_data(data, num, length, dtype=">u2"):
+def get_data(data, num, length, dtype="<u2"):
     data = (pibyte*(num*length)).from_address(data)
     return np.ctypeslib.as_array(data).reshape(num, length).view(dtype)
 
@@ -131,20 +130,16 @@ class Camera:
         failed_count = piint()
         Error.check(Picam_CommitParameters(
             self._handle, byref(failed), byref(failed_count)))
-        failed_names = [get_string(PicamEnumeratedType_Parameter,
-            failed[i]) for i in range(failed_count.value)]
+        fails = [failed[i].value for i in range(failed_count.value)]
         Error.check(Picam_DestroyParameters(failed))
-        return failed_names
+        # get_string(PicamEnumeratedType_Parameter, ...)
+        return fails
 
     def acquire(self, num_frames=1, timeout=-1):
         data = PicamAvailableData()
         errors = PicamAcquisitionErrorsMask()
         logger.debug("acquire")
-        Error.check(Picam_Acquire(self._handle, num_frames, timeout,
-                                   byref(data), byref(errors)))
-        if errors.value == PicamAcquisitionErrorsMask_None:
-            errors = None
-        else:
-            errors = get_string(PicamEnumeratedType_AcquisitionErrorsMask,
-                                errors)
+        Error.check(Picam_Acquire(
+            self._handle, num_frames, timeout, byref(data), byref(errors)))
+        # get_string(PicamEnumeratedType_AcquisitionErrorsMask, errors)
         return data, errors
