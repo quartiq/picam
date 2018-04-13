@@ -15,7 +15,7 @@ class Error(Exception):
 
     def __str__(self):
         try:
-            string = get_string(PicamEnumeratedType_Error, self.error)
+            string = Library.get_string(PicamEnumeratedType_Error, self.error)
         except:
             string = "<failed to retrieve error description>"
         return "{} ({})".format(self.error, string)
@@ -25,14 +25,6 @@ class Error(Exception):
         if err == PicamError_None:
             return
         raise cls(err)
-
-
-def get_string(typ, val):
-    string = POINTER(pichar)()
-    Error.check(Picam_GetEnumerationString(typ, val, byref(string)))
-    ret = cast(string, c_char_p).value.decode()  # decode copies
-    Error.check(Picam_DestroyString(string))
-    return ret
 
 
 def get_data(data, readout_stride):
@@ -57,11 +49,21 @@ class Library:
 
     def __enter__(self):
         if self.initialized():
-            raise ValueError("already initialized")
+            raise ValueError("already initialized elsewhere")
         self.initialize()
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.uninitialize()
+
+    @staticmethod
+    def get_string(typ, val):
+        """Resolve a PiCam enum to a human readable string"""
+        string = POINTER(pichar)()
+        Error.check(Picam_GetEnumerationString(typ, val, byref(string)))
+        ret = cast(string, c_char_p).value.decode()  # decode copies
+        Error.check(Picam_DestroyString(string))
+        return ret
 
 
 class Camera:
@@ -142,46 +144,48 @@ class Camera:
         Error.check(Picam_SetParameterRoisValue(
             self._handle, parameter, byref(PicamRois(val, len(value)))))
 
-    def get(self, parameter):
+    def get_parameter_value_type(self, parameter):
         typ = PicamValueType()
         Error.check(Picam_GetParameterValueType(
             self._handle, parameter, byref(typ)))
-        if typ.value in (
+        return typ.value
+
+    def get(self, parameter):
+        typ = self.get_parameter_value_type(parameter)
+        if typ in (
                 PicamValueType_Integer,
                 PicamValueType_Boolean,
                 PicamValueType_Enumeration):
             return self.get_int(parameter)
-        elif typ.value == PicamValueType_LargeInteger:
+        elif typ == PicamValueType_LargeInteger:
             return self.get_long(parameter)
-        elif typ.value == PicamValueType_FloatingPoint:
+        elif typ == PicamValueType_FloatingPoint:
             return self.get_float(parameter)
-        elif typ.value == PicamValueType_Rois:
+        elif typ == PicamValueType_Rois:
             return self.get_rois(parameter)
-        elif typ.value == PicamValueType_Pulse:
+        elif typ == PicamValueType_Pulse:
             return self.get_pulse(parameter)
-        elif typ.value == PicamValueType_Modulations:
+        elif typ == PicamValueType_Modulations:
             return self.get_modulations(parameter)
         else:
             raise ValueError("unknown parameter value type")
 
     def set(self, parameter, value):
-        typ = PicamValueType()
-        Error.check(Picam_GetParameterValueType(
-            self._handle, parameter, byref(typ)))
-        if typ.value in (
+        typ = self.get_parameter_value_type(parameter)
+        if typ in (
                 PicamValueType_Integer,
                 PicamValueType_Boolean,
                 PicamValueType_Enumeration):
             return self.set_int(parameter, value)
-        elif typ.value == PicamValueType_LargeInteger:
+        elif typ == PicamValueType_LargeInteger:
             return self.set_long(parameter, value)
-        elif typ.value == PicamValueType_FloatingPoint:
+        elif typ == PicamValueType_FloatingPoint:
             return self.set_float(parameter, value)
-        elif typ.value == PicamValueType_Rois:
+        elif typ == PicamValueType_Rois:
             return self.set_rois(parameter, value)
-        elif typ.value == PicamValueType_Pulse:
+        elif typ == PicamValueType_Pulse:
             return self.set_pulse(parameter, value)
-        elif typ.value == PicamValueType_Modulations:
+        elif typ == PicamValueType_Modulations:
             return self.set_modulations(parameter, value)
         else:
             raise ValueError("unknown parameter value type")
@@ -198,6 +202,12 @@ class Camera:
     def get_parameter_value_access(self, parameter):
         val = piint()
         Error.check(Picam_GetParameterValueAccess(
+            self._handle, parameter, byref(val)))
+        return val.value
+
+    def get_parameter_enumerated_type(self, parameter):
+        val = PicamEnumeratedType()
+        Error.check(Picam_GetParameterEnumeratedType(
             self._handle, parameter, byref(val)))
         return val.value
 
@@ -250,3 +260,16 @@ class Camera:
         Error.check(Picam_Acquire(
             self._handle, readout_count, timeout, byref(data), byref(errors)))
         return data, errors
+
+    def start_acquisition(self):
+        Error.check(Picam_StartAcquisition(self._handle))
+
+    def stop_acquisition(self):
+        Error.check(Picam_StopAcquisition(self._handle))
+
+    def wait_for_acquisition_update(self, timeout=-1):
+        data = PicamAvailableData()
+        status = PicamAcquisitionStatus()
+        Error.check(Picam_WaitForAcquisitionUpdate(
+            self._handle, timeout, byref(data), byref(status)))
+        return data, status
