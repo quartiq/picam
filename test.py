@@ -1,14 +1,14 @@
 import logging
 
+import numpy as np
+
 import pi
 
 
 logger = logging.getLogger(__name__)
 
 
-def main(cam):
-    NUM_FRAMES = 3
-
+def main(cam, num_frames=3):
     cid = cam.get_id()
     model = pi.get_string(pi.PicamEnumeratedType_Model, cid.model)
     logger.info("model: %s, serial: %s, sensor: %s", model,
@@ -58,7 +58,7 @@ def main(cam):
         cam.set(pi.PicamParameter_AdcAnalogGain,
                 pi.PicamAdcAnalogGain_Low)
 
-    cam.set(pi.PicamParameter_ExposureTime, 1000.)  # ms
+    cam.set(pi.PicamParameter_ExposureTime, 100.)  # ms
     cam.set(pi.PicamParameter_ReadoutCount, 1)
     cam.set(pi.PicamParameter_NormalizeOrientation, True)
     cam.set(pi.PicamParameter_CorrectPixelBias, True)
@@ -80,7 +80,8 @@ def main(cam):
                     cam.get(pi.PicamParameter_ExposureTime))
 
     readout_stride = cam.get(pi.PicamParameter_ReadoutStride)
-    for i in range(NUM_FRAMES):
+    frames = np.empty((100, 512, 512), "<u2")
+    for i in range(num_frames):
         data, errors = cam.acquire(1)
         if errors.value:
             errors = pi.get_string(
@@ -88,7 +89,8 @@ def main(cam):
             logger.warning("acquisition errors %s", errors)
         data = pi.get_data(data, readout_stride).view("<u2")
         logger.info("frames %s: %s", data.shape, data[:, :10])
-
+        frames[i] = data.reshape(frames.shape[1:])
+    np.savez("pi_frames.npz", frames=frames)
 
 if __name__ == "__main__":
     logging.basicConfig(
