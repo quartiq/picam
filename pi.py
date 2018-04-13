@@ -186,6 +186,45 @@ class Camera:
         else:
             raise ValueError("unknown parameter value type")
 
+    def get_parameters(self):
+        parameters = POINTER(PicamParameter)()
+        parameters_count = piint()
+        Error.check(Picam_GetParameters(
+            self._handle, byref(parameters), byref(parameters_count)))
+        params = parameters[:parameters_count.value]  # copies
+        Error.check(Picam_DestroyParameters(parameters))
+        return params
+
+    def get_parameter_value_access(self, parameter):
+        val = piint()
+        Error.check(Picam_GetParameterValueAccess(
+            self._handle, parameter, byref(val)))
+        return val.value
+
+    def get_parameter_constraint_type(self, parameter):
+        val = piint()
+        Error.check(Picam_GetParameterValueAccess(
+            self._handle, parameter, byref(val)))
+        return val.value
+
+    def get_parameter_range_constraint(
+            self, parameter, category=PicamConstraintCategory_Capable):
+        c = POINTER(PicamRangeConstraint)()
+        Error.check(Picam_GetParameterRangeConstraint(
+            self._handle, parameter, category, byref(c)))
+        constraint = (c[0].minimum, c[0].maximum, c[0].increment)
+        Error.check(Picam_DestroyRangeConstraints(c))
+        return constraint
+
+    def get_parameter_collection_constraint(
+            self, parameter, category=PicamConstraintCategory_Capable):
+        c = POINTER(PicamCollectionConstraint)()
+        Error.check(Picam_GetParameterCollectionConstraint(
+            self._handle, parameter, category, byref(c)))
+        constraint = [c[0].values_array[i] for i in range(c[0].values_count)]
+        Error.check(Picam_DestroyCollectionConstraints(c))
+        return constraint
+
     def comitted(self):
         ret = pibln()
         Error.check(Picam_AreParametersCommitted(
