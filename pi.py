@@ -1,6 +1,6 @@
 import logging
 
-from ctypes import byref, POINTER, cast, c_char_p, string_at, c_double
+from ctypes import byref, POINTER, cast, c_char_p
 import numpy as np
 
 from picam import *
@@ -35,9 +35,10 @@ def get_string(typ, val):
     return ret
 
 
-def get_data(data, num, length, dtype="<u2"):
-    data = (pibyte*(num*length)).from_address(data)
-    return np.ctypeslib.as_array(data).reshape(num, length).view(dtype)
+def get_data(data, readout_stride):
+    mem = (pibyte*(data.readout_count*readout_stride)).from_address(
+        data.initial_readout)
+    return np.ctypeslib.as_array(mem).reshape(data.readout_count, -1)
 
 
 class Library:
@@ -89,35 +90,101 @@ class Camera:
         Error.check(Picam_GetCameraID(self._handle, byref(cid)))
         return cid
 
-    def get_int(self, typ):
+    def get_int(self, parameter):
         val = piint()
         Error.check(Picam_GetParameterIntegerValue(
-            self._handle, typ, byref(val)))
+            self._handle, parameter, byref(val)))
         return val.value
 
-    def get_long(self, typ):
+    def get_long(self, parameter):
         val = pi64s()
         Error.check(Picam_GetParameterIntegerValue(
-            self._handle, typ, byref(val)))
+            self._handle, parameter, byref(val)))
         return val.value
 
-    def get_float(self, typ):
+    def get_float(self, parameter):
         val = piflt()
         Error.check(Picam_GetParameterFloatingPointValue(
-            self._handle, typ, byref(val)))
+            self._handle, parameter, byref(val)))
         return val.value
 
-    def set_int(self, typ, value):
+    def get_rois(self, parameter=PicamParameter_Rois):
+        val = POINTER(PicamRois)()
+        Error.check(Picam_GetParameterRoisValue(
+            self._handle, parameter, byref(val)))
+        vals = val.contents
+        roip = vals.roi_array
+        rois = []
+        for i in range(vals.roi_count):
+            x = roip[i].x, roip[i].width, roip[i].x_binning
+            y = roip[i].y, roip[i].height, roip[i].y_binning
+            rois.append((x, y))
+        Error.check(Picam_DestroyRois(val))
+        return rois
+
+    def set_int(self, parameter, value):
         Error.check(Picam_SetParameterIntegerValue(
-            self._handle, typ, piint(value)))
+            self._handle, parameter, piint(value)))
 
-    def set_long(self, typ, value):
+    def set_long(self, parameter, value):
         Error.check(Picam_SetParameterLargeIntegerValue(
-            self._handle, typ, pi64s(value)))
+            self._handle, parameter, pi64s(value)))
 
-    def set_float(self, typ, value):
+    def set_float(self, parameter, value):
         Error.check(Picam_SetParameterFloatingPointValue(
-            self._handle, typ, piflt(value)))
+            self._handle, parameter, piflt(value)))
+
+    def set_rois(self, parameter, value):
+        val = (PicamRoi*len(value))()
+        for i, (x, y) in enumerate(value):
+            val[i].x, val[i].width, val[i].x_binning = x
+            val[i].y, val[i].height, val[i].y_binning = y
+        Error.check(Picam_SetParameterRoisValue(
+            self._handle, parameter, byref(PicamRois(val, len(value)))))
+
+    def get(self, parameter):
+        typ = PicamValueType()
+        Error.check(Picam_GetParameterValueType(
+            self._handle, parameter, byref(typ)))
+        if typ.value in (
+                PicamValueType_Integer,
+                PicamValueType_Boolean,
+                PicamValueType_Enumeration):
+            return self.get_int(parameter)
+        elif typ.value == PicamValueType_LargeInteger:
+            return self.get_long(parameter)
+        elif typ.value == PicamValueType_FloatingPoint:
+            return self.get_float(parameter)
+        elif typ.value == PicamValueType_Rois:
+            return self.get_rois(parameter)
+        elif typ.value == PicamValueType_Pulse:
+            return self.get_pulse(parameter)
+        elif typ.value == PicamValueType_Modulations:
+            return self.get_modulations(parameter)
+        else:
+            raise ValueError("unknown parameter value type")
+
+    def set(self, parameter, value):
+        typ = PicamValueType()
+        Error.check(Picam_GetParameterValueType(
+            self._handle, parameter, byref(typ)))
+        if typ.value in (
+                PicamValueType_Integer,
+                PicamValueType_Boolean,
+                PicamValueType_Enumeration):
+            return self.set_int(parameter, value)
+        elif typ.value == PicamValueType_LargeInteger:
+            return self.set_long(parameter, value)
+        elif typ.value == PicamValueType_FloatingPoint:
+            return self.set_float(parameter, value)
+        elif typ.value == PicamValueType_Rois:
+            return self.set_rois(parameter, value)
+        elif typ.value == PicamValueType_Pulse:
+            return self.set_pulse(parameter, value)
+        elif typ.value == PicamValueType_Modulations:
+            return self.set_modulations(parameter, value)
+        else:
+            raise ValueError("unknown parameter value type")
 
     def comitted(self):
         ret = pibln()
@@ -132,14 +199,12 @@ class Camera:
             self._handle, byref(failed), byref(failed_count)))
         fails = [failed[i].value for i in range(failed_count.value)]
         Error.check(Picam_DestroyParameters(failed))
-        # get_string(PicamEnumeratedType_Parameter, ...)
         return fails
 
-    def acquire(self, num_frames=1, timeout=-1):
+    def acquire(self, readout_count=1, timeout=-1):
         data = PicamAvailableData()
         errors = PicamAcquisitionErrorsMask()
         logger.debug("acquire")
         Error.check(Picam_Acquire(
-            self._handle, num_frames, timeout, byref(data), byref(errors)))
-        # get_string(PicamEnumeratedType_AcquisitionErrorsMask, errors)
+            self._handle, readout_count, timeout, byref(data), byref(errors)))
         return data, errors
