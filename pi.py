@@ -16,9 +16,9 @@ class Error(Exception):
     def __str__(self):
         try:
             string = get_string(PicamEnumeratedType_Error, self.error)
-            return "pi.Error({}): {}".format(self.error, string)
         except:
-            return "pi.Error({})".format(self.error)
+            string = "<failed to retrieve error description>"
+        return "{} ({})".format(self.error, string)
 
     @classmethod
     def check(cls, err):
@@ -98,7 +98,7 @@ class Camera:
 
     def get_long(self, parameter):
         val = pi64s()
-        Error.check(Picam_GetParameterIntegerValue(
+        Error.check(Picam_GetParameterLargeIntegerValue(
             self._handle, parameter, byref(val)))
         return val.value
 
@@ -203,7 +203,7 @@ class Camera:
 
     def get_parameter_constraint_type(self, parameter):
         val = piint()
-        Error.check(Picam_GetParameterValueAccess(
+        Error.check(Picam_GetParameterConstraintType(
             self._handle, parameter, byref(val)))
         return val.value
 
@@ -234,11 +234,14 @@ class Camera:
     def commit(self):
         failed = POINTER(PicamParameter)()
         failed_count = piint()
-        Error.check(Picam_CommitParameters(
-            self._handle, byref(failed), byref(failed_count)))
-        fails = [failed[i].value for i in range(failed_count.value)]
-        Error.check(Picam_DestroyParameters(failed))
-        return fails
+        try:
+            Error.check(Picam_CommitParameters(
+                self._handle, byref(failed), byref(failed_count)))
+        except Error as err:
+            err.fails = [failed[i] for i in range(failed_count.value)]
+            raise
+        finally:
+            Error.check(Picam_DestroyParameters(failed))
 
     def acquire(self, readout_count=1, timeout=-1):
         data = PicamAvailableData()

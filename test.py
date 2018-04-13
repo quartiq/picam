@@ -23,14 +23,12 @@ def main(cam):
         constraint = pi.get_string(
             pi.PicamEnumeratedType_ConstraintType,
             typ)
-        logger.info("param %s, access: %s, constraint %s",
+        logger.info("parameter '%s', access: %s, constraint: %s",
                     name, access, constraint)
+        logger.info("value: %s", cam.get(i))
         if typ == pi.PicamConstraintType_Range:
-            try:
-                logger.info("range from %f to %f, incr %f",
-                            *cam.get_parameter_range_constraint(i))
-            except pi.Error:
-                logger.warning("invalid constraint")
+            logger.info("range from %f to %f, incr %f",
+                        *cam.get_parameter_range_constraint(i))
         elif typ == pi.PicamConstraintType_Collection:
             logger.info("collection %s",
                         cam.get_parameter_collection_constraint(i))
@@ -41,17 +39,41 @@ def main(cam):
         pi.PicamEnumeratedType_SensorTemperatureStatus,
         cam.get(pi.PicamParameter_SensorTemperatureStatus))
     logger.info("temp status: %s", st)
-    cam.set(pi.PicamParameter_SensorTemperatureSetPoint, -20.)
-    cam.set(pi.PicamParameter_AdcAnalogGain,
-            pi.PicamAdcAnalogGain_Low)
-    cam.set(pi.PicamParameter_ExposureTime, 30.)  # ms
+    cam.set(pi.PicamParameter_DisableCoolingFan, False)
+    cam.set(pi.PicamParameter_SensorTemperatureSetPoint, -70.)
+    cam.set(pi.PicamParameter_ReadoutControlMode,
+            pi.PicamReadoutControlMode_FrameTransfer)
+    if True:
+        cam.set(pi.PicamParameter_AdcQuality,
+                pi.PicamAdcQuality_LowNoise)
+        cam.set(pi.PicamParameter_AdcSpeed, 1.)  # MHz
+        cam.set(pi.PicamParameter_AdcEMGain, 1)
+        cam.set(pi.PicamParameter_AdcAnalogGain,
+                pi.PicamAdcAnalogGain_High)
+    else:
+        cam.set(pi.PicamParameter_AdcQuality,
+                pi.PicamAdcQuality_ElectronMultiplied)
+        cam.set(pi.PicamParameter_AdcSpeed, 5.)  # MHz
+        cam.set(pi.PicamParameter_AdcEMGain, 20)
+        cam.set(pi.PicamParameter_AdcAnalogGain,
+                pi.PicamAdcAnalogGain_Low)
+
+    cam.set(pi.PicamParameter_ExposureTime, 1000.)  # ms
     cam.set(pi.PicamParameter_ReadoutCount, 1)
-    cam.set(pi.PicamParameter_Rois, [((0, 512, 1), (0, 512, 1))])
-    fails = cam.commit()
-    if fails:
+    cam.set(pi.PicamParameter_NormalizeOrientation, True)
+    cam.set(pi.PicamParameter_CorrectPixelBias, True)
+    cam.set(pi.PicamParameter_ShutterTimingMode,
+            pi.PicamShutterTimingMode_AlwaysClosed)
+    if True:
+        cam.set(pi.PicamParameter_Rois, [((0, 512, 1), (0, 512, 1))])
+    else:
+        cam.set(pi.PicamParameter_Rois, [((250, 20, 1), (250, 20, 1))])
+    try:
+        cam.commit()
+    except pi.Error as err:
         logger.info("failed commit: %s", [
             pi.get_string(pi.PicamEnumeratedType_Parameter, i)
-            for i in fails])
+            for i in err.fails])
 
     logger.info("rois %s", cam.get(pi.PicamParameter_Rois))
     logger.debug("exposure %s ms",
