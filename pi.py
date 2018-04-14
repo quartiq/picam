@@ -1,6 +1,7 @@
 import logging
-
+from contextlib import contextmanager
 from ctypes import byref, POINTER, cast, c_char_p
+
 import numpy as np
 
 from picam import *
@@ -244,6 +245,7 @@ class Camera:
     def commit(self):
         failed = POINTER(PicamParameter)()
         failed_count = piint()
+        logger.debug("commit")
         try:
             Error.check(Picam_CommitParameters(
                 self._handle, byref(failed), byref(failed_count)))
@@ -262,9 +264,11 @@ class Camera:
         return data, errors
 
     def start_acquisition(self):
+        logger.debug("start acquisition")
         Error.check(Picam_StartAcquisition(self._handle))
 
     def stop_acquisition(self):
+        logger.debug("stop acquisition")
         Error.check(Picam_StopAcquisition(self._handle))
 
     def wait_for_acquisition_update(self, timeout=-1):
@@ -273,3 +277,11 @@ class Camera:
         Error.check(Picam_WaitForAcquisitionUpdate(
             self._handle, timeout, byref(data), byref(status)))
         return data, status
+
+    @contextmanager
+    def acquisition(self):
+        self.start_acquisition()
+        try:
+            yield
+        finally:
+            self.stop_acquisition()
