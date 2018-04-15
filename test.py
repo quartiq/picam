@@ -104,6 +104,8 @@ def main():
         logger.info("model: %s, serial: %s, sensor: %s", model,
                     cid.serial_number.decode(), cid.sensor_name.decode())
 
+        logger.info("firmware details %s", cam.get_firmware_details())
+
         configure_cam(lib, cam)
 
         for i in cam.get_parameters():

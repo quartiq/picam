@@ -103,6 +103,17 @@ class Camera:
         Error.check(Picam_GetCameraID(self._handle, byref(cid)))
         return cid
 
+    def get_firmware_details(self):
+        cid = self.get_id()
+        details = POINTER(PicamFirmwareDetail)()
+        details_count = piint()
+        Error.check(Picam_GetFirmwareDetails(
+            byref(cid), byref(details), byref(details_count)))
+        ret = [(details[i].name.decode(), details[i].detail.decode())
+               for i in range(details_count.value)]
+        Error.check(Picam_DestroyFirmwareDetails(details))
+        return ret
+
     def get_int(self, parameter):
         val = piint()
         Error.check(Picam_GetParameterIntegerValue(
