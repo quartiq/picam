@@ -66,6 +66,16 @@ class Library:
         Error.check(Picam_DestroyString(string))
         return ret
 
+    @staticmethod
+    def get_strings(typ, val):
+        mask = val
+        for i in range(32):
+            if not mask:
+                break
+            bit = mask & (1 << i)
+            if bit:
+                yield Library.get_string(typ, bit)
+                mask &= ~bit
 
 class Camera:
     def __init__(self):
@@ -261,6 +271,7 @@ class Camera:
         logger.debug("acquire")
         Error.check(Picam_Acquire(
             self._handle, readout_count, timeout, byref(data), byref(errors)))
+        # data valid until the next acquire() or wait_for_acquisition_update()
         return data, errors
 
     def start_acquisition(self):
@@ -276,6 +287,7 @@ class Camera:
         status = PicamAcquisitionStatus()
         Error.check(Picam_WaitForAcquisitionUpdate(
             self._handle, timeout, byref(data), byref(status)))
+        # data valid until the next acquire() or wait_for_acquisition_update()
         return data, status
 
     @contextmanager
