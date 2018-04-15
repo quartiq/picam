@@ -4,7 +4,7 @@ from ctypes import byref, POINTER, cast, c_char_p
 
 import numpy as np
 
-from picam import *
+from .types import *
 
 
 logger = logging.getLogger(__name__)

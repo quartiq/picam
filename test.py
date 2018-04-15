@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-import pi
+import picam as pi
 
 
 logger = logging.getLogger(__name__)
