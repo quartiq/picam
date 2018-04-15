@@ -87,10 +87,9 @@ def acquire(lib, cam, num_frames=3):
     frames = np.empty((num_frames, readout_count, 512, 512), "<u2")
     for i in range(num_frames):
         data, errors = cam.acquire(readout_count)
-        if errors.value:
-            errors = lib.get_string(
-                pi.PicamEnumeratedType_AcquisitionErrorsMask, errors)
-            logger.warning("acquisition errors %s", errors)
+        for err in lib.get_strings(
+                pi.PicamEnumeratedType_AcquisitionErrorsMask, errors.value):
+            logger.warning("acquisition error %s", err)
         data = pi.get_data(data, readout_stride).view("<u2")
         logger.info("frames %s: %s", data.shape, data[:, :10])
         frames[i] = data.reshape(frames.shape[1:])
