@@ -7,6 +7,20 @@
 #
 import ctypes
 
+"""PICam library types.
+
+This module defines the PICam library function signatures, enums
+and structures offered and used by the PICam API.
+
+They are all extensively documented in the PICam documentation available in the
+SDK package (ftp.princetoninstruments.com/Public/Software/Official/PICam)
+
+This file (apart from this docstring) was generated using ctypeslib2
+(https://github.com/trolldbois/ctypeslib) with: ::
+
+    clang2py.py -l libpicam.so.0 Picam_SDK/pi/includes/pi* > picam/types.py
+"""
+
 
 # if local wordsize is same as target, keep ctypes pointer function.
 if ctypes.sizeof(ctypes.c_void_p) == 8:

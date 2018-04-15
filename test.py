@@ -90,7 +90,7 @@ def acquire(lib, cam, num_frames=3):
         for err in lib.get_strings(
                 pi.PicamEnumeratedType_AcquisitionErrorsMask, errors.value):
             logger.warning("acquisition error %s", err)
-        data = pi.get_data(data, readout_stride).view("<u2")
+        data = cam.get_data(data, readout_stride).view("<u2")
         logger.info("frames %s: %s", data.shape, data[:, :10])
         frames[i] = data.reshape(frames.shape[1:])
     np.savez("pi_frames.npz", frames=frames)

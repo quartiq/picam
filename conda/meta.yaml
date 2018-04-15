@@ -1,0 +1,31 @@
+package:
+  name: picam
+  version: {{ environ.get("GIT_DESCRIBE_TAG", "") }}
+
+source:
+  git_url: ..
+
+{% set data = load_setup_py_data() %}
+
+build:
+  noarch: python
+  number: {{ environ.get("GIT_DESCRIBE_NUMBER", 0) }}
+  string: py_{{ environ.get("GIT_DESCRIBE_NUMBER", 0) }}+git{{ environ.get("GIT_FULL_HASH", "")[:8] }}
+  script: $PYTHON setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python >=3.5
+    - setuptools
+  run:
+    - python >=3.5
+    - numpy
+
+test:
+  imports:
+    - picam
+
+about:
+  home: https://github.com/quartiq/picam
+  license: LGPL
+  summary: 'PICam Python wrapper'

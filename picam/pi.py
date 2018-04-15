@@ -7,6 +7,23 @@ import numpy as np
 from .types import *
 
 
+"""PICam "pythonic" interface.
+
+The pythonic interface exposes classes that are very thin wrappers around
+the original :module:`picam.types` enums, structures and functions.
+
+They follow simple naming rules (strip "Picam", convert "CamelCase"
+to "lowercase_with_underscores") and abstract over the PICam memory handling
+functions (the various allocation and destruction functions). The methods are
+only documented where they contain significant additions or changes w.r.t.
+the "intuitive" interface.
+
+The original PICam API is extensively documented in the PICam
+documentation available in the
+SDK package (ftp.princetoninstruments.com/Public/Software/Official/PICam)
+"""
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,17 +48,14 @@ class Error(Exception):
         raise cls(err)
 
 
-def get_data(data, readout_stride):
-    """Convert :class:`PicamAvailableData` into NumPy array."""
-    mem = (pibyte*(data.readout_count*readout_stride)).from_address(
-        data.initial_readout)
-    return np.ctypeslib.as_array(mem).reshape(data.readout_count, -1)
-
-
 class Library:
     """PICam Library.
 
     Maintains library initialization state, string management/retrieval.
+
+    Implements the Python context manager protocol to expose a "library
+    initialized" context with library deinitialization being the
+    cleanup handler.
     """
     def initialized(self):
         val = pibln()
@@ -76,6 +90,8 @@ class Library:
 
     @staticmethod
     def get_strings(typ, val):
+        """Resolve a PICam enumerated bitmask to a generator of strings for
+        each bit set."""
         mask = val
         for i in range(32):
             if not mask:
@@ -86,7 +102,11 @@ class Library:
                 mask &= ~bit
 
 class Camera:
-    """PICam Handle"""
+    """PICam camera handle.
+
+    Owns a camera handle.
+    Implements "open camera" context manager.
+    """
     def __init__(self):
         self._handle = PicamHandle()
 
@@ -182,6 +202,11 @@ class Camera:
         return typ.value
 
     def get(self, parameter):
+        """Get a parameter value.
+
+        Parameter type is automatically determined and dispatched to
+        the appropriate typed getter.
+        """
         typ = self.get_parameter_value_type(parameter)
         if typ in (
                 PicamValueType_Integer,
@@ -202,6 +227,11 @@ class Camera:
             raise ValueError("unknown parameter value type")
 
     def set(self, parameter, value):
+        """Set a parameter value.
+
+        Parameter type is automatically determined and dispatched to
+        the appropriate typed setter.
+        """
         typ = self.get_parameter_value_type(parameter)
         if typ in (
                 PicamValueType_Integer,
@@ -312,8 +342,23 @@ class Camera:
 
     @contextmanager
     def acquisition(self):
+        """Context manager for around StartAcquisition()/StopAcquisition()"""
         self.start_acquisition()
         try:
             yield
         finally:
             self.stop_acquisition()
+
+    @staticmethod
+    def get_data(data, readout_stride):
+        """Convert :class:`PicamAvailableData` into NumPy array.
+
+        Args:
+            data (:class:`PicamAvailableData`): Data to be converted.
+            readout_stride (int): ReadoutStride parameter.
+        """
+        if not data or not data.initial_readout or not data.readout_count:
+            raise ValueError("empty data")
+        mem = (pibyte*(data.readout_count*readout_stride)).from_address(
+            data.initial_readout)
+        return np.ctypeslib.as_array(mem).reshape(data.readout_count, -1)
