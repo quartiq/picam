@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
+    """PICam API Error"""
     def __init__(self, error):
         self.error = error
 
@@ -23,18 +24,25 @@ class Error(Exception):
 
     @classmethod
     def check(cls, err):
+        """Check integer return value and raise if it is a
+        PICam API error"""
         if err == PicamError_None:
             return
         raise cls(err)
 
 
 def get_data(data, readout_stride):
+    """Convert :class:`PicamAvailableData` into NumPy array."""
     mem = (pibyte*(data.readout_count*readout_stride)).from_address(
         data.initial_readout)
     return np.ctypeslib.as_array(mem).reshape(data.readout_count, -1)
 
 
 class Library:
+    """PICam Library.
+
+    Maintains library initialization state, string management/retrieval.
+    """
     def initialized(self):
         val = pibln()
         Error.check(Picam_IsLibraryInitialized(byref(val)))
@@ -59,7 +67,7 @@ class Library:
 
     @staticmethod
     def get_string(typ, val):
-        """Resolve a PiCam enum to a human readable string"""
+        """Resolve a PICam enum to a human readable string"""
         string = POINTER(pichar)()
         Error.check(Picam_GetEnumerationString(typ, val, byref(string)))
         ret = cast(string, c_char_p).value.decode()  # decode copies
@@ -78,6 +86,7 @@ class Library:
                 mask &= ~bit
 
 class Camera:
+    """PICam Handle"""
     def __init__(self):
         self._handle = PicamHandle()
 
