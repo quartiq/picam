@@ -13,6 +13,7 @@ def configure_cam(lib, cam):
     cam.set(pi.PicamParameter_SensorTemperatureSetPoint, -70.)
     cam.set(pi.PicamParameter_ReadoutControlMode,
             pi.PicamReadoutControlMode_FrameTransfer)
+    cam.set(pi.PicamParameter_VerticalShiftRate, 0.6)
     if True:
         cam.set(pi.PicamParameter_AdcQuality,
                 pi.PicamAdcQuality_LowNoise)
@@ -34,6 +35,11 @@ def configure_cam(lib, cam):
     cam.set(pi.PicamParameter_CorrectPixelBias, True)
     cam.set(pi.PicamParameter_ShutterTimingMode,
             pi.PicamShutterTimingMode_AlwaysClosed)
+    cam.set(pi.PicamParameter_TriggerResponse,
+            pi.PicamTriggerResponse_NoResponse)
+    cam.set(pi.PicamParameter_CleanBeforeExposure, True)
+    cam.set(pi.PicamParameter_CleanUntilTrigger, True)
+    cam.set(pi.PicamParameter_DisableDataFormatting, False)
     if True:
         cam.set(pi.PicamParameter_Rois, [((0, 512, 1), (0, 512, 1))])
     else:
