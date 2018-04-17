@@ -4,6 +4,7 @@ from ctypes import byref, POINTER, cast, c_char_p
 
 import numpy as np
 
+from . import types
 from .types import *
 
 
@@ -101,6 +102,12 @@ class Library:
                 yield Library.get_string(typ, bit)
                 mask &= ~bit
 
+    @staticmethod
+    def get_enum(name):
+        """Resolve a named PICam enum into its numeric value"""
+        return getattr(types, name)
+
+
 class Camera:
     """PICam camera handle.
 
@@ -113,6 +120,17 @@ class Camera:
     def open_first(self):
         logger.debug("open_first")
         Error.check(Picam_OpenFirstCamera(byref(self._handle)))
+        return self
+
+    def connect_demo(self, model, serial):
+        cid = PicamCameraID()
+        logger.debug("connect_demo")
+        Error.check(Picam_ConnectDemoCamera(
+            model, serial.encode(), byref(cid)))
+        return cid
+
+    def open(self, cid):
+        Error.check(Picam_OpenCamera(cid, byref(self._handle)))
         return self
 
     def __enter__(self):

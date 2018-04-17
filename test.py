@@ -97,20 +97,27 @@ def acquire(lib, cam, num_frames=3):
 
 
 def main():
-    with pi.Library() as lib, pi.Camera().open_first() as cam:
-        cid = cam.get_id()
-        model = lib.get_string(pi.PicamEnumeratedType_Model, cid.model)
-        logger.info("model: %s, serial: %s, sensor: %s", model,
-                    cid.serial_number.decode(), cid.sensor_name.decode())
+    with pi.Library() as lib:
+        cam = pi.Camera()
+        try:
+            cam.open_first()
+        except pi.Error:
+            cam.open(cam.connect_demo(
+                pi.PicamModel_ProEMHS512BExcelon, "12345678"))
+        with cam:
+            cid = cam.get_id()
+            model = lib.get_string(pi.PicamEnumeratedType_Model, cid.model)
+            logger.info("model: %s, serial: %s, sensor: %s", model,
+                        cid.serial_number.decode(), cid.sensor_name.decode())
 
-        logger.info("firmware details %s", cam.get_firmware_details())
+            logger.info("firmware details %s", cam.get_firmware_details())
 
-        configure_cam(lib, cam)
+            configure_cam(lib, cam)
 
-        for i in cam.get_parameters():
-            print_parameter_info(lib, cam, i)
+            for i in cam.get_parameters():
+                print_parameter_info(lib, cam, i)
 
-        acquire(lib, cam)
+            acquire(lib, cam)
 
 
 if __name__ == "__main__":
