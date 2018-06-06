@@ -18,7 +18,7 @@ setup(
     install_requires=[],
     entry_points={
         "console_scripts": [
-            # "aqctl_picam = ptb.aqctl_picam:main",
+            "aqctl_picam = picam.aqctl_picam:main",
         ],
     },
     # test_suite="picam.test",
