@@ -1,6 +1,10 @@
 PICam Python wrapper
 ====================
 
+.. image:: https://readthedocs.org/projects/picam/badge/?version=latest
+    :target: https://picam.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 TODO
 ----
 
