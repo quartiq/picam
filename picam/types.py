@@ -5,6 +5,7 @@
 # POINTER_SIZE is: 8
 # LONGDOUBLE_SIZE is: 16
 #
+import os
 import ctypes
 
 """PICam library types.
@@ -62,7 +63,11 @@ else:
         return _class
 
 _libraries = {}
-_libraries['libpicam.so.0'] = ctypes.CDLL('libpicam.so.0')
+if os.name == "nt":
+    libpicam_name = "picam.dll"
+else:
+    libpicam_name = "libpicam.so.0"
+_libraries['libpicam.so.0'] = ctypes.CDLL(libpicam_name)
 c_int128 = ctypes.c_ubyte*16
 c_uint128 = c_int128
 void = None
