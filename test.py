@@ -25,23 +25,23 @@ def configure_cam(lib, cam):
         cam.set(pi.PicamParameter_AdcQuality,
                 pi.PicamAdcQuality_ElectronMultiplied)
         cam.set(pi.PicamParameter_AdcSpeed, 5.)  # MHz
-        cam.set(pi.PicamParameter_AdcEMGain, 20)
+        cam.set(pi.PicamParameter_AdcEMGain, 20)  # ptb: 80x
         cam.set(pi.PicamParameter_AdcAnalogGain,
-                pi.PicamAdcAnalogGain_Low)
+                pi.PicamAdcAnalogGain_Low)  # ptb: high
 
-    cam.set(pi.PicamParameter_ExposureTime, 100.)  # ms
+    cam.set(pi.PicamParameter_ExposureTime, 500.)  # ms
     cam.set(pi.PicamParameter_ReadoutCount, 1)
     cam.set(pi.PicamParameter_NormalizeOrientation, True)
     cam.set(pi.PicamParameter_CorrectPixelBias, True)
     cam.set(pi.PicamParameter_ShutterTimingMode,
-            pi.PicamShutterTimingMode_AlwaysClosed)
+            pi.PicamShutterTimingMode_AlwaysOpen)
     cam.set(pi.PicamParameter_TriggerResponse,
             pi.PicamTriggerResponse_NoResponse)
     cam.set(pi.PicamParameter_CleanBeforeExposure, True)
     cam.set(pi.PicamParameter_CleanUntilTrigger, True)
     cam.set(pi.PicamParameter_DisableDataFormatting, False)
     if True:
-        cam.set(pi.PicamParameter_Rois, [((0, 512, 1), (0, 512, 1))])
+        cam.set(pi.PicamParameter_Rois, [((0, 512, 2), (0, 512, 2))])
     else:
         cam.set(pi.PicamParameter_Rois, [((250, 20, 1), (250, 20, 1))])
     try:
@@ -84,7 +84,7 @@ def print_parameter_info(lib, cam, i):
 def acquire(lib, cam, num_frames=3):
     readout_stride = cam.get(pi.PicamParameter_ReadoutStride)
     readout_count = cam.get(pi.PicamParameter_ReadoutCount)
-    frames = np.empty((num_frames, readout_count, 512, 512), "<u2")
+    frames = np.empty((num_frames, readout_count, 256, 256), "<u2")
     for i in range(num_frames):
         data, errors = cam.acquire(readout_count)
         for err in lib.get_strings(
