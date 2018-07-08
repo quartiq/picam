@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
-import time
-
-from . import pi
+import logging
 
 from artiq.protocols.pc_rpc import simple_server_loop
 from artiq.tools import (verbosity_args, simple_network_args, init_logger,
-    bind_address_from_args)
+                         bind_address_from_args)
+
+from . import pi
+
+
+logger = logging.getLogger(__name__)
+
+
+class CameraCtrl(pi.Camera):
+    def get(self, key):
+        return pi.Camera.get(self, getattr(pi, "PicamParameter_{}".format(key)))
+
+    def set(self, key, value):
+        return pi.Camera.set(self, getattr(pi, "PicamParameter_{}".format(key)), value)
+
+    def enum(self, key):
+        return getattr(pi, key)
+
+    def acquire(self, readout_count, readout_stride):
+        data, errors = pi.Camera.acquire(self, readout_count)
+        data = pi.Camera.get_data(data, readout_stride)
+        return data, errors.value
 
 
 def get_argparser():
@@ -27,14 +45,14 @@ def main():
     init_logger(args)
 
     with pi.Library() as lib:
-        lib
-        cam = pi.Camera()
+        cam = CameraCtrl()
         if args.simulation:
             cam.open(cam.connect_demo(
                 pi.PicamModel_ProEMHS512BExcelon, "12345678"))
         else:
             cam.open_first()
         with cam:
+            logger.info("Camera open, serving")
             simple_server_loop({"cam": cam}, bind_address_from_args(args),
                                args.port, description="")
 
