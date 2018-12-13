@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import asyncio
 import argparse
 import logging
 
@@ -27,6 +28,14 @@ class CameraCtrl(pi.Camera):
         data, errors = pi.Camera.acquire(self, readout_count)
         data = pi.Camera.get_data(data, readout_stride)
         return data, errors.value
+
+    async def ping(self):
+        try:
+            self.get_id()
+        except:
+            logger.warning("ping failed", exc_info=True)
+            return False
+        return True
 
 
 def get_argparser():
