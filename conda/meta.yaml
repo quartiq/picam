@@ -1,11 +1,9 @@
 package:
   name: picam
-  version: {{ environ.get("GIT_DESCRIBE_TAG", "") }}
+  version: {{ environ.get("GIT_DESCRIBE_TAG", "")[1:] }}
 
 source:
   git_url: ..
-
-{% set data = load_setup_py_data() %}
 
 build:
   noarch: python
